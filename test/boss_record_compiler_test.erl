@@ -2,18 +2,6 @@
 -include_lib("proper/include/proper.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
--type error(T)     :: {ok, T} | {error, string()}.
--type syntaxTree() :: erl_syntax:syntaxTree().
--type name()       :: atom()|[byte(),...].
--type fctn_n()     :: {atom(), non_neg_integer()}.
--type fctn()       :: {function, atom(), atom(), non_neg_integer(), _}.
--type pair()       :: {atom(),atom()}.
--type assoc()      :: {has,        {atom(), integer()}}          |
-                      {has,        {atom(), integer(), [any()]}} |
-                      {belongs_to, atom()}.
-
-
-
 make_counters_test() ->
     ?assert(proper:check_spec({boss_record_compiler,make_counters, 1},
                               [{to_file, user}])),
@@ -22,7 +10,7 @@ make_counters_test() ->
 
 prop_duplicated_forms() ->
     ?FORALL({Parameters},
-            { 
+            {
              list(atom())
              },
             begin
@@ -52,7 +40,7 @@ has_duplicates_test() ->
     ?assert(proper:check_spec({boss_record_compiler,has_duplicates, 1},
                                       [{to_file, user}])),
     ok.
-    
+
 
 list_functions_test() ->
             ?assert(proper:check_spec({boss_record_compiler,list_functions, 1},
@@ -61,19 +49,19 @@ list_functions_test() ->
                                       [{to_file, user}])),
             ok.
 
-override_functions_test_() ->
-    {timeout,
-     300,
-     ?_test(
-        begin
-            ?assert(proper:check_spec({boss_record_compiler,override_functions, 2},
-                                      [{to_file, user}, 
-                                       40])),
-            ?assert(proper:check_spec({boss_record_compiler,override_functions, 3},
-                                      [{to_file, user}, 
-                                       40])),
-            ok
-        end)}.
+% override_functions_test_() ->
+%     {timeout,
+%      300,
+%      ?_test(
+%         begin
+%             ?assert(proper:check_spec({boss_record_compiler,override_functions, 2},
+%                                       [{to_file, user},
+%                                        40])),
+%             ?assert(proper:check_spec({boss_record_compiler,override_functions, 3},
+%                                       [{to_file, user},
+%                                        40])),
+%             ok
+%         end)}.
 
 export_forms_test() ->
     {timeout,
@@ -83,14 +71,14 @@ export_forms_test() ->
 
             ?assert(proper:check_spec({boss_record_compiler,export_forms, 1},
                                       [{to_file, user}])),
-            
+
             ?assert(proper:check_spec({boss_record_compiler,export_forms, 2},
-                                      [{to_file, user}, 
+                                      [{to_file, user},
                                        40])),
             ok
         end)}.
 
-    
+
 
 
 database_column_forms_test() ->
@@ -184,10 +172,10 @@ has_many_forms_test_test() ->
     ok.
 
 
-first_or_undefined_forms_test() ->
-    ?assert(proper:check_spec({boss_record_compiler, first_or_undefined_forms, 1},
-                              [{to_file, user}])),
-    ok.
+% first_or_undefined_forms_test() ->
+%     ?assert(proper:check_spec({boss_record_compiler, first_or_undefined_forms, 1},
+%                               [{to_file, user}])),
+%     ok.
 
 
 
@@ -207,7 +195,7 @@ has_many_query_forms_with_conditions_test() ->
  ?assert(proper:check_spec({boss_record_compiler, has_many_query_forms_with_conditions, 1},
                               [{to_file, user}])),
     ok.
-        
+
 
 
 counter_belongs_to_forms_test() ->
@@ -239,14 +227,14 @@ counter_name_forms_test() ->
     ?assert(proper:check_spec({boss_record_compiler, counter_name_forms, 1},
                               [{to_file, user}])),
     ok.
-        
-  
-    
+
+
+
 paramater_to_colname_test() ->
     ?assertEqual("test",     boss_record_compiler:parameter_to_colname('test')),
     ?assertEqual("test_one",boss_record_compiler:parameter_to_colname('TestOne')),
     ?assert(proper:check_spec({boss_record_compiler, parameter_to_colname, 1},
                               [{to_file, user}])),
     ok.
-        
-  
+
+

@@ -6,33 +6,33 @@
 -define(TMODULE, boss_compiler).
 -define(TEST(Name, Function, Arity),
         Name() ->
-               ?assert(proper:check_spec({?TMODULE, Function, Arity}, 
+               ?assert(proper:check_spec({?TMODULE, Function, Arity},
                                          [{to_file,user}])),
                ok.).
 
 spec_test_() ->
      begin
          Tests = [fun prop_transform_char/0,
-                 
+
                   {scan_transform_result, 1},
                   {flatten_token_locations, 1},
-                  {cut_at_location,3},
+                  {cut_at_location, 3},
                   fun prop_transform_tokens/0,
                   fun prop_transform_tokens_null/0,
                   {make_parse_errors, 1},
-                  {parse_has_errors,3}],
+                  {parse_has_errors, 3}],
          [case Test of
              {Funct, Arity} ->
                  ?_assert(proper:check_spec({?TMODULE, Funct, Arity},
                                             [{to_file, user}]));
              F when is_function(F,0) ->
-                 ?_assert(proper:quickcheck(F(), 
+                 ?_assert(proper:quickcheck(F(),
                                             [{to_file, user}]))
           end||Test <-Tests]
-                                            
+
      end.
 
-    
+
 prop_transform_char() ->
     ?FORALL(Char,
             special_chars(),
@@ -51,7 +51,7 @@ prop_transform_char() ->
 %%     ?assert(proper:check_spec({boss_compiler, scan_transform, 1},
 %%                               [{to_file, user}])),
 %%     ok.
-                              
+
 
 
 
