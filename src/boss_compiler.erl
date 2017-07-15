@@ -35,7 +35,7 @@ compile(File) ->
     compile(File, []).
 
 compile(File, Options) ->
-    _ = lager:notice("Compile file ~p with options ~p ", [File, Options]),
+    %_ = lager:notice("Compile file ~p with options ~p ", [File, Options]),
     IncludeDirs    = ["include"] ++ proplists:get_value(include_dirs,    Options, []) ++
                      proplists:get_all_values(i, compiler_options(Options)),
     TokenTransform = proplists:get_value(token_transform, Options),
