@@ -88,14 +88,29 @@ apply_sort([], _Key, _Order) ->
     [];
 apply_sort(List, primary, Order) ->
     apply_sort(List, id, Order);
+apply_sort(List, id, ascending) ->
+    Fun = fun (A, B) ->
+							[_, C1] = string:tokens(apply(A, id, []), "-"),
+							[_, C2] = string:tokens(apply(B, id, []), "-"),
+							C1I = list_to_integer(C1),
+							C2I = list_to_integer(C2),
+							C1I =< C2I end,
+    lists:sort(Fun, List);
 apply_sort(List, Key, ascending) ->
     Fun = fun (A, B) -> apply(A,Key,[]) =< apply(B,Key,[]) end,
     lists:sort(Fun, List);
+apply_sort(List, id, descending) ->
+    Fun = fun (A, B) ->
+							[_, C1] = string:tokens(apply(A, id, []), "-"),
+							[_, C2] = string:tokens(apply(B, id, []), "-"),
+							C1I = list_to_integer(C1),
+							C2I = list_to_integer(C2),
+							C1I >= C2I end,
+    lists:sort(Fun, List);
+
 apply_sort(List, Key, descending) ->
     Fun = fun (A, B) -> apply(A,Key,[]) >= apply(B,Key,[]) end,
     lists:sort(Fun, List).
-
-
 
 apply_skip(List, 0) ->
     List;
