@@ -117,7 +117,7 @@ edoc_module(File, Options) ->
                         Options).
 
 process_tokens(Tokens) ->
-    _ = lager:info("Tokens ~p",[Tokens]),
+    % _ = lager:info("Tokens ~p",[Tokens]),
     process_tokens(Tokens, [], []).
 
 process_tokens([{']',_},
@@ -149,7 +149,7 @@ process_tokens([{'-',_N             } = T1,
                 {')',_}|Rest]  = _T,
                TokenAcc, []) ->
    % lager:notice("Tokens ~p", [_T]) ,
-    _ = lager:info("Var Type ~p",[VarType]),
+    % _ = lager:info("Var Type ~p",[VarType]),
     process_tokens(Rest, lists:reverse([T1, T2, T3, T4, T5, T6, T7], TokenAcc), [{'Id', VarType}]);
 
 process_tokens([{',',_}               = T1,
@@ -160,7 +160,7 @@ process_tokens([{',',_}               = T1,
                 {')',_} |Rest] = _T,
                TokenAcc, Acc) ->
 %    lager:notice("Tokens ~p", [_T]),
-    _ = lager:info("Var Type ~p",[VarType]),
+    % _ = lager:info("Var Type ~p",[VarType]),
     process_tokens(Rest, lists:reverse([T1, T2], TokenAcc), [{VarName, VarType}|Acc]);
 
 process_tokens([H|T], TokenAcc, Acc) ->
