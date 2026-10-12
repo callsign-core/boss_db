@@ -16,6 +16,9 @@ start_link(StartArgs) ->
 init(StartArgs) ->
     Args = [{name, {local, boss_db_pool}},
         {worker_module, boss_db_controller},
-        {size, 200}, {max_overflow, 50}|StartArgs],
+        {size, proplists:get_value(size, StartArgs, 200)},
+        {max_overflow, proplists:get_value(max_overflow, StartArgs, 50)} |
+        proplists:delete(name, proplists:delete(worker_module,
+            proplists:delete(size, proplists:delete(max_overflow, StartArgs))))],
     PoolSpec = {db_controller, {poolboy, start_link, [Args]}, permanent, 2000, worker, [poolboy]},
     {ok, {{one_for_one, 10, 10}, [PoolSpec]}}.

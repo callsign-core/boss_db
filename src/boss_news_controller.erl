@@ -177,7 +177,7 @@ handle_call({extend_watch, WatchId}, _From, State0) ->
 handle_call({created, Id, Attrs}, _From, State0) ->
     State                = boss_news_controller_util:prune_expired_entries(State0),
     [Module | _IdNum]   = re:split(Id, "-", [{return, list}, {parts, 2}]),
-    PluralModel         = inflector:pluralize(Module),
+    PluralModel         = inflector:legacy_pluralize(Module),
     Watchers            = dict:find(PluralModel, State#state.set_watchers),
     {RetVal, State1}    = boss_news_controller_util:created_news_process(Id, Attrs, State,
                                                                          PluralModel, Watchers),
@@ -185,7 +185,7 @@ handle_call({created, Id, Attrs}, _From, State0) ->
 handle_call({deleted, Id, OldAttrs}, _From, State0) ->
     State                = boss_news_controller_util:prune_expired_entries(State0),
     [Module | _IdNum]   = re:split(Id, "-", [{return, list}, {parts, 2}]),
-    PluralModel         = inflector:pluralize(Module),
+    PluralModel         = inflector:legacy_pluralize(Module),
     Watchers            = dict:find(PluralModel, State#state.set_watchers),
     {RetVal, State1}    = boss_news_controller_util:delete_news_watchers(Id, OldAttrs, State,
                                                                          PluralModel, Watchers),

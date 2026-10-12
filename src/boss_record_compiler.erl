@@ -306,7 +306,7 @@ database_columns_forms(ModuleName, Parameters, Attributes) ->
             Function)].
 
 database_table_forms(ModuleName, Attributes) ->
-    DefinedTableName = proplists:get_value(table, Attributes, inflector:pluralize(atom_to_list(ModuleName))),
+    DefinedTableName = proplists:get_value(table, Attributes, inflector:legacy_pluralize(atom_to_list(ModuleName))),
     Function = erl_syntax:function(
         erl_syntax:atom(database_table),
         [erl_syntax:clause([], none, [erl_syntax:string(DefinedTableName)])]),
@@ -576,7 +576,7 @@ has_many_forms(HasMany, ModuleName, many, Opts) ->
 has_many_forms(HasMany, ModuleName, Limit, Opts) ->
     Sort         = proplists:get_value(order_by, Opts, 'id'),
     IsDescending = proplists:get_value(descending, Opts, false),
-    Singular     = inflector:singularize(atom_to_list(HasMany)),
+    Singular     = inflector:legacy_singularize(atom_to_list(HasMany)),
     Type         = proplists:get_value(module, Opts, Singular),
     Include      = proplists:get_value(include, Opts, []),
     ForeignKey   = proplists:get_value(foreign_key, Opts, atom_to_list(ModuleName) ++ "_id"),

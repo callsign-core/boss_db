@@ -155,7 +155,7 @@ type_to_bucket(Type) ->
 type_to_bucket_name(Type) when is_atom(Type) ->
     type_to_bucket_name(atom_to_list(Type));
 type_to_bucket_name(Type) when is_list(Type) ->
-    inflector:pluralize(Type).
+    inflector:legacy_pluralize(Type).
 
 build_search_query(Conditions) ->
     Terms = build_search_query(Conditions, []),

@@ -30,6 +30,7 @@
 -export([pluralize/1, singularize/1, camelize/1, lower_camelize/1, titleize/1,
 	 capitalize/1, humanize/1, underscore/1, dasherize/1, tableize/1, moduleize/1,
 	 foreign_key/1, ordinalize/1]).
+-export([legacy_pluralize/1, legacy_singularize/1]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -39,6 +40,16 @@ singularize(Word) ->
 
 pluralize(Word) ->
     pluralize_or_singularize( Word, plurals() ).
+
+%% Persistence, generated associations and news topics retain historical names.
+%% Correcting ordinary inflection must never silently rename existing data.
+legacy_pluralize(Word) ->
+    pluralize_or_singularize(Word, legacy_irregulars() ++
+        lists:nthtail(length(irregulars()), plurals())).
+
+legacy_singularize(Word) ->
+    Rules = lists:sublist(singulars(), length(singulars()) - length(irregulars())),
+    pluralize_or_singularize(Word, Rules ++ [{B, A} || {A, B} <- legacy_irregulars()]).
 
 camelize(LowerCaseAndUnderscoredWord) ->
     lists:flatten(
@@ -75,13 +86,13 @@ dasherize(UnderscoredWord) ->
     lists:map( fun ($_) -> $-; (C) -> C end, UnderscoredWord ).
 
 tableize(ModuleName) ->
-    pluralize( underscore( ModuleName ) ).
+    legacy_pluralize( underscore( ModuleName ) ).
 
 foreign_key(ClassName) ->
     underscore(ClassName) ++ "_id".
 
 moduleize(TableName) ->
-    camelize(singularize(TableName)).
+    camelize(legacy_singularize(TableName)).
 
 
 ordinalize(N) ->
@@ -178,6 +189,9 @@ singulars() ->
       {"s$",                     ""      } ] ++ reversed_irregulars().
 
 irregulars() ->
+    [{A ++ "$", B} || {A, B} <- legacy_irregulars()].
+
+legacy_irregulars() ->
     [{"move",   "moves"   },
      {"sex",    "sexes"   },
      {"child",  "children"},
@@ -185,8 +199,7 @@ irregulars() ->
      {"person", "people"  }].
 
 reversed_irregulars() ->
-    F = fun ({A, B}) -> {B, A} end,
-    lists:map(F, irregulars()).
+    [{B ++ "$", A} || {A, B} <- legacy_irregulars()].
 
 uncountables() ->
     ["sheep",
