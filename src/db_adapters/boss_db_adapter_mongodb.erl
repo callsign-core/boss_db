@@ -470,7 +470,7 @@ type_to_collection(Type) ->
 type_to_collection_name(Type) when is_atom(Type) ->
     type_to_collection_name(atom_to_list(Type));
 type_to_collection_name(Type) when is_list(Type) ->
-    inflector:pluralize(Type).
+    inflector:legacy_pluralize(Type).
 
 % Convert a tuple return by the MongoDB driver to a Boss record
 mongo_tuple_to_record(Type, Row) ->
