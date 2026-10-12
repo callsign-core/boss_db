@@ -15,7 +15,7 @@
 -type form()         :: atom().
 -type position()     :: {non_neg_integer(), non_neg_integer()}.
 
--type otp_version() :: 14|15|16|17|18|19|20.
+-type otp_version() :: pos_integer().
 -spec(make_forms_by_version([syntaxTree()], otp_version()) ->syntaxTree()).
 -spec compile(binary() | [atom() | [any()] | char()]) -> {'error',atom() | {_,[any(),...]}}.
 -spec compile(binary() | [atom() | [any()] | char()],[any()]) -> {'error',atom() | {_,[any(),...]}}.
@@ -61,8 +61,10 @@ handle_parse_success(File, Options, Forms, TokenInfo) ->
     compile_forms1(File, Options, CompilerOptions, RevertedForms).
 
 compiler_options(Options) ->
-    proplists:get_value(compiler_options, Options,
-                        [verbose, return_errors]).
+    %% BossRecord and controller instances retain their historical tuples.
+    %% Modern OTP requires tuple_calls for Instance:Function(...) dispatch.
+    [tuple_calls | proplists:get_value(compiler_options, Options,
+                                      [verbose, return_errors])].
 
 compile_forms1(File, Options, CompilerOptions, RevertedForms) ->
     case compile_forms(RevertedForms, File, CompilerOptions) of

@@ -398,11 +398,14 @@ deep_get_forms() ->
                                             erl_syntax:tuple([erl_syntax:atom("ok"), erl_syntax:variable(?PREFIX++"BossRecord")])], none,
                                         [erl_syntax:application(
                                             erl_syntax:atom(apply),
-                                            [erl_syntax:variable(?PREFIX++"BossRecord"),
+                                            [erl_syntax:application(
+                                                    erl_syntax:atom(element),
+                                                    [erl_syntax:integer(1),
+                                                        erl_syntax:variable(?PREFIX++"BossRecord")]),
                                                 erl_syntax:application(
                                                     erl_syntax:atom(list_to_existing_atom),
                                                     [erl_syntax:variable(?PREFIX++"Token")]),
-                                                erl_syntax:list([])])]),
+                                                erl_syntax:list([erl_syntax:variable(?PREFIX++"BossRecord")])])]),
                                     erl_syntax:clause([
                                             erl_syntax:variable("_"++?PREFIX++"Token"),
                                             erl_syntax:atom("undefined")], none,
@@ -412,11 +415,14 @@ deep_get_forms() ->
                                             erl_syntax:variable(?PREFIX++"BossRecord")], none,
                                         [erl_syntax:application(
                                             erl_syntax:atom(apply),
-                                            [erl_syntax:variable(?PREFIX++"BossRecord"),
+                                            [erl_syntax:application(
+                                                    erl_syntax:atom(element),
+                                                    [erl_syntax:integer(1),
+                                                        erl_syntax:variable(?PREFIX++"BossRecord")]),
                                                 erl_syntax:application(
                                                     erl_syntax:atom(list_to_existing_atom),
                                                     [erl_syntax:variable(?PREFIX++"Token")]),
-                                                erl_syntax:list([])])])
+                                                erl_syntax:list([erl_syntax:variable(?PREFIX++"BossRecord")])])])
                             ]),
                             erl_syntax:variable("THIS"),
                             erl_syntax:application(
