@@ -51,7 +51,10 @@ find(_, Type, Conditions, Max, Skip, Sort, SortOrder) when is_atom(Type), is_lis
     case boss_record_lib:ensure_loaded(Type) of
         true ->
             {Pattern, Filter} = build_query(Type, Conditions, Max, Skip, Sort, SortOrder),
-            RawList = mnesia:dirty_match_object(list_to_tuple([Type | Pattern])),
+            RawList = case mnesia:is_transaction() of
+                true -> mnesia:match_object(Type, list_to_tuple([Type | Pattern]), read);
+                false -> mnesia:dirty_match_object(list_to_tuple([Type | Pattern]))
+            end,
             FilteredList = apply_filters(RawList, Filter),
             SortedList = apply_sort(FilteredList, Sort, SortOrder),
             SkippedList = apply_skip(SortedList, Skip),
@@ -90,26 +93,26 @@ apply_sort(List, primary, Order) ->
     apply_sort(List, id, Order);
 apply_sort(List, id, ascending) ->
     Fun = fun (A, B) ->
-							[_, C1] = string:tokens(apply(A, id, []), "-"),
-							[_, C2] = string:tokens(apply(B, id, []), "-"),
+							[_, C1] = string:tokens(A:id(), "-"),
+							[_, C2] = string:tokens(B:id(), "-"),
 							C1I = list_to_integer(C1),
 							C2I = list_to_integer(C2),
 							C1I =< C2I end,
     lists:sort(Fun, List);
 apply_sort(List, Key, ascending) ->
-    Fun = fun (A, B) -> apply(A,Key,[]) =< apply(B,Key,[]) end,
+    Fun = fun (A, B) -> A:Key() =< B:Key() end,
     lists:sort(Fun, List);
 apply_sort(List, id, descending) ->
     Fun = fun (A, B) ->
-							[_, C1] = string:tokens(apply(A, id, []), "-"),
-							[_, C2] = string:tokens(apply(B, id, []), "-"),
+							[_, C1] = string:tokens(A:id(), "-"),
+							[_, C2] = string:tokens(B:id(), "-"),
 							C1I = list_to_integer(C1),
 							C2I = list_to_integer(C2),
 							C1I >= C2I end,
     lists:sort(Fun, List);
 
 apply_sort(List, Key, descending) ->
-    Fun = fun (A, B) -> apply(A,Key,[]) >= apply(B,Key,[]) end,
+    Fun = fun (A, B) -> A:Key() >= B:Key() end,
     lists:sort(Fun, List).
 
 apply_skip(List, 0) ->
@@ -125,51 +128,51 @@ apply_max(List, Max) when is_integer(Max) ->
     lists:sublist(List, Max).
 
 test_rec(Rec,{Key, 'not_equals', Value}) ->
-    apply(Rec,Key,[]) /= Value;
+    Rec:Key() /= Value;
 test_rec(Rec,{Key, 'in', Value}) when is_list(Value) ->
-    lists:member(apply(Rec,Key,[]), Value) ;
+    lists:member(Rec:Key(), Value) ;
 test_rec(Rec,{Key, 'not_in', Value}) when is_list(Value) ->
-    not lists:member(apply(Rec,Key,[]), Value) ;
+    not lists:member(Rec:Key(), Value) ;
 test_rec(Rec,{Key, 'in', {Min, Max}}) when Max >= Min ->
-    Fld = apply(Rec,Key,[]),
+    Fld = Rec:Key(),
     (Fld >= Min) and (Fld =< Max);
 test_rec(Rec,{Key, 'not_in', {Min, Max}}) when Max >= Min ->
-    Fld = apply(Rec,Key,[]),
+    Fld = Rec:Key(),
     (Fld < Min) or (Fld > Max);
 test_rec(Rec,{Key, 'gt', Value}) ->
-    apply(Rec,Key,[]) > Value;
+    Rec:Key() > Value;
 test_rec(Rec,{Key, 'lt', Value}) ->
-    apply(Rec,Key,[]) < Value;
+    Rec:Key() < Value;
 test_rec(Rec,{Key, 'ge', Value}) ->
-    apply(Rec,Key,[]) >= Value;
+    Rec:Key() >= Value;
 test_rec(Rec,{Key, 'le', Value}) ->
-    apply(Rec,Key,[]) =< Value;
+    Rec:Key() =< Value;
 test_rec(Rec,{Key, 'matches', "*"++Value}) ->
     {ok, MP} = re:compile(Value, [caseless]),
-    case re:run(apply(Rec,Key,[]), MP) of
+    case re:run(Rec:Key(), MP) of
         {match,_} -> true;
         _ -> false
     end;
 test_rec(Rec,{Key, 'matches', Value}) ->
     {ok, MP} = re:compile(Value),
-    case re:run(apply(Rec,Key,[]), MP) of
+    case re:run(Rec:Key(), MP) of
         {match,_} -> true;
         _ -> false
     end;
 test_rec(Rec,{Key, 'not_matches', Value}) ->
     not test_rec(Rec,{Key, 'matches', Value});
 test_rec(Rec,{Key, 'contains', Value}) ->
-    lists:member(Value,apply(Rec,Key,[]));
+    lists:member(Value,Rec:Key());
 test_rec(Rec,{Key, 'not_contains', Value}) ->
-    not lists:member(Value,apply(Rec,Key,[]));
+    not lists:member(Value,Rec:Key());
 test_rec(Rec,{Key, 'contains_all', Values}) when is_list(Values) ->
-    lists:all(fun (Ele) -> lists:member(Ele, apply(Rec,Key,[])) end, Values);
+    lists:all(fun (Ele) -> lists:member(Ele, Rec:Key()) end, Values);
 test_rec(Rec,{Key, 'not_contains_all', Values}) when is_list(Values) ->
-    lists:any(fun (Ele) -> not lists:member(Ele, apply(Rec,Key,[])) end, Values);
+    lists:any(fun (Ele) -> not lists:member(Ele, Rec:Key()) end, Values);
 test_rec(Rec,{Key, 'contains_any', Values}) when is_list(Values) ->
-    lists:any(fun (Ele) -> lists:member(Ele, apply(Rec,Key,[])) end, Values);
+    lists:any(fun (Ele) -> lists:member(Ele, Rec:Key()) end, Values);
 test_rec(Rec,{Key, 'contains_none', Values}) when is_list(Values) ->
-    lists:any(fun (Ele) -> not lists:member(Ele, apply(Rec,Key,[])) end, Values).
+    lists:any(fun (Ele) -> not lists:member(Ele, Rec:Key()) end, Values).
 
 % -----
 count(Conn, Type, Conditions) ->

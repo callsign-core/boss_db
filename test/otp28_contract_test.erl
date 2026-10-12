@@ -1,0 +1,38 @@
+-module(otp28_contract_test).
+-compile(tuple_calls).
+-include_lib("eunit/include/eunit.hrl").
+compiler_and_mnesia_test()->
+    Tmp=filename:join(os:getenv("TMPDIR"),"boss-db-otp28-contract"),
+    ok=filelib:ensure_dir(Tmp++"/fixture.erl"),
+    Source="-module(otp28_contract_model, [Id, Name::string(), Child]).\n",
+    File=Tmp++"/otp28_contract_model.erl",ok=file:write_file(File,Source),
+    {ok,otp28_contract_model}=boss_record_compiler:compile(File,[{out_dir,Tmp}]),
+    {module,otp28_contract_model}=code:load_abs(Tmp++"/otp28_contract_model"),
+    Child=otp28_contract_model:new("otp28_contract_model-10","Child",undefined),
+    Row=otp28_contract_model:new("otp28_contract_model-2","Alpha",Child),
+    ?assertEqual("Alpha",Row:name()),
+    ?assertEqual("Child",Row:get("child.name")),
+    ?assertEqual("Beta",(Row:set(name,"Beta")):name()),
+    ?assertError(badarg,Row:get("otp28_uninterned_attribute_884")),
+    Dir=Tmp++"/mnesia",application:set_env(mnesia,dir,Dir),
+    ok=mnesia:create_schema([node()]),ok=application:start(mnesia),
+    try
+        {atomic,ok}=mnesia:create_table(otp28_contract_model,
+            [{attributes,[id,name,child]},{disc_copies,[node()]}]),
+        {ok,Row}=boss_db_adapter_mnesia:save_record(undefined,Row),
+        {ok,Child}=boss_db_adapter_mnesia:save_record(undefined,Child),
+        ?assertEqual([Row,Child],boss_db_adapter_mnesia:find(undefined,otp28_contract_model,[],all,0,id,ascending)),
+        ?assertEqual([Child,Row],boss_db_adapter_mnesia:find(undefined,otp28_contract_model,[],all,0,id,descending)),
+        ?assertEqual({aborted,synthetic_abort},boss_db_adapter_mnesia:transaction(undefined,fun()->
+            mnesia:write(Row:set(name,"rollback")),
+            2=boss_db_adapter_mnesia:count(undefined,otp28_contract_model,[]),
+            mnesia:abort(synthetic_abort)
+        end)),
+        ?assertEqual(Row,boss_db_adapter_mnesia:find(undefined,Row:id())),
+        ok=application:stop(mnesia),ok=application:start(mnesia),
+        ok=mnesia:wait_for_tables([otp28_contract_model],5000),
+        ?assertEqual(Row,boss_db_adapter_mnesia:find(undefined,Row:id()))
+    after
+        application:stop(mnesia),mnesia:delete_schema([node()]),application:unset_env(mnesia,dir),
+        code:purge(otp28_contract_model),code:delete(otp28_contract_model)
+    end.
